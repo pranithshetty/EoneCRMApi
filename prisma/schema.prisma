@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  name       String
+  keyHash    String    @map("key_hash")
+  isActive   Boolean   @default(true) @map("is_active")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  @@map("api_keys")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid())
+  source      String
+  externalId  String?   @map("external_id")
+  payload     Json
+  status      String
+  error       String?
+  receivedAt  DateTime  @default(now()) @map("received_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@map("webhook_events")
+}
+
+model Lead {
+  id               String   @id @default(uuid())
+  name             String
+  email            String
+  phone            String
+  sourceType       String   @map("source_type")
+  utmSource        String?  @map("utm_source")
+  utmMedium        String?  @map("utm_medium")
+  utmCampaign      String?  @map("utm_campaign")
+  utmAdset         String?  @map("utm_adset")
+  utmAd            String?  @map("utm_ad")
+  platformLeadId   String   @unique @map("platform_lead_id")
+  platformFormId   String?  @map("platform_form_id")
+  landingPageUrl   String?  @map("landing_page_url")
+  rawPayload       Json     @map("raw_payload")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("leads")
+}
