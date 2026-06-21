@@ -67,10 +67,30 @@ const invokeHandler = async (
   }
 };
 
+/**
+ * @openapi
+ * /supabase/user:
+ *   get:
+ *     summary: Get the current Supabase user context
+ *     tags: [Supabase]
+ *     responses:
+ *       200:
+ *         description: Supabase user context response
+ */
 router.get("/user", async (req, res, next) => {
   await invokeHandler(supabaseUserHandler, req, res, next);
 });
 
+/**
+ * @openapi
+ * /supabase/admin:
+ *   get:
+ *     summary: Get the Supabase admin context response
+ *     tags: [Supabase]
+ *     responses:
+ *       200:
+ *         description: Supabase admin response
+ */
 router.get("/admin", async (req, res, next) => {
   await invokeHandler(supabaseSecretHandler, req, res, next);
 });

@@ -2,6 +2,12 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma";
 
 export const leadRepository = {
+  async findAll() {
+    return prisma.lead.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   async findByPlatformLeadId(platformLeadId: string) {
     return prisma.lead.findUnique({
       where: { platformLeadId },

@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
 import { requestIdMiddleware } from "./middleware/requestId.middleware";
 import { errorMiddleware } from "./middleware/error.middleware";
 import authRoutes from "./auth/auth.routes";
@@ -10,6 +11,7 @@ import leadRoutes from "./leads/lead.routes";
 import healthRoutes from "./health/health.routes";
 import supabaseRoutes from "./supabase/supabase.routes";
 import { logger } from "./utils/logger";
+import { swaggerSpec } from "./swagger";
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.use(
 );
 app.use(express.json());
 app.use(requestIdMiddleware);
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/webhooks", webhookRoutes);
