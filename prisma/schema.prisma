@@ -15,17 +15,22 @@ model User {
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  leads        Lead[]
+  apiKeys      ApiKey[]
 
   @@map("users")
 }
 
 model ApiKey {
   id         String    @id @default(uuid())
+  userId     String    @map("user_id")
   name       String
   keyHash    String    @map("key_hash")
   isActive   Boolean   @default(true) @map("is_active")
   createdAt  DateTime  @default(now()) @map("created_at")
   lastUsedAt DateTime? @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id])
 
   @@map("api_keys")
 }
@@ -45,6 +50,7 @@ model WebhookEvent {
 
 model Lead {
   id               String   @id @default(uuid())
+  userId           String?  @map("user_id")
   name             String
   email            String
   phone            String
@@ -60,6 +66,8 @@ model Lead {
   rawPayload       Json     @map("raw_payload")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id])
 
   @@map("leads")
 }

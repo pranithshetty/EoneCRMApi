@@ -5,7 +5,7 @@ import { logger } from "../utils/logger";
 import { LeadWebhookSchema } from "../validators/leadWebhook.schema";
 
 export const webhookService = {
-  async processLead(input: z.infer<typeof LeadWebhookSchema>) {
+  async processLead(input: z.infer<typeof LeadWebhookSchema>, userId?: string) {
     const { lead } = input;
 
     const platformLeadId = lead.platform_lead_id;
@@ -43,6 +43,7 @@ export const webhookService = {
       }
 
       const createdLead = await leadRepository.create({
+        userId,
         name: lead.name,
         email: lead.email,
         phone: lead.phone,

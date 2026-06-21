@@ -8,6 +8,13 @@ export const leadRepository = {
     });
   },
 
+  async findAllForUser(userId: string) {
+    return prisma.lead.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   async findByPlatformLeadId(platformLeadId: string) {
     return prisma.lead.findUnique({
       where: { platformLeadId },
@@ -15,6 +22,7 @@ export const leadRepository = {
   },
 
   async create(data: {
+    userId?: string;
     name: string;
     email: string;
     phone: string;
@@ -32,6 +40,7 @@ export const leadRepository = {
     return prisma.lead.create({
       data: {
         ...data,
+        userId: data.userId ?? null,
         rawPayload: data.rawPayload as Prisma.JsonObject,
       },
     });

@@ -9,7 +9,7 @@ This project provides:
 - JWT-based auth endpoints for demo login flow
 - CRUD-style lead retrieval endpoints
 - Webhook ingestion for lead payloads
-- Health checks for liveness and readiness
+- A combined health check endpoint
 - Supabase integration endpoints for user/admin context
 - Swagger UI at `/docs`
 
@@ -84,8 +84,7 @@ npm start
 
 ### Health
 
-- `GET /health/live`
-- `GET /health/ready`
+- `GET /health`
 
 ### Auth
 

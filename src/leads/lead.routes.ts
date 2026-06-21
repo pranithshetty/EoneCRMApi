@@ -1,7 +1,14 @@
-import { Router } from "express";
+import { Request, Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { leadRepository } from "./lead.repository";
 import { supabaseUserHandler } from "../supabase/supabase.handler";
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string;
+    email: string;
+  };
+}
 
 const router = Router();
 
@@ -17,14 +24,23 @@ const router = Router();
  *       200:
  *         description: List of leads
  */
-router.get("/", authMiddleware, async (_req, res, next) => {
-  try {
-    const leads = await leadRepository.findAll();
-    res.json({ count: leads.length, leads });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get(
+  "/",
+  authMiddleware,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const leads = await leadRepository.findAllForUser(userId);
+      res.json({ count: leads.length, leads });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 /**
  * @openapi
@@ -38,25 +54,34 @@ router.get("/", authMiddleware, async (_req, res, next) => {
  *       200:
  *         description: Summarized leads information
  */
-router.get("/info", authMiddleware, async (_req, res, next) => {
-  try {
-    const leads = await leadRepository.findAll();
-    res.json({
-      count: leads.length,
-      leads: leads.map((lead) => ({
-        id: lead.id,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        sourceType: lead.sourceType,
-        platformLeadId: lead.platformLeadId,
-        createdAt: lead.createdAt,
-      })),
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get(
+  "/info",
+  authMiddleware,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const leads = await leadRepository.findAllForUser(userId);
+      res.json({
+        count: leads.length,
+        leads: leads.map((lead) => ({
+          id: lead.id,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          sourceType: lead.sourceType,
+          platformLeadId: lead.platformLeadId,
+          createdAt: lead.createdAt,
+        })),
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 /**
  * @openapi
@@ -64,13 +89,37 @@ router.get("/info", authMiddleware, async (_req, res, next) => {
  *   get:
  *     summary: Fetch lead data through the Supabase handler
  *     tags: [Leads]
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Supabase response payload
  */
-router.get("/supabase", async (req, res, next) => {
+router.get("/supabase", authMiddleware, async (req, res, next) => {
   try {
-    const response = await supabaseUserHandler(req as any);
+    const headers = new Headers();
+
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (item) {
+            headers.append(key, item);
+          }
+        }
+      } else if (typeof value === "string") {
+        headers.set(key, value);
+      }
+    }
+
+    const request = new Request(
+      `${req.protocol}://${req.get("host")}${req.originalUrl}`,
+      {
+        method: req.method,
+        headers,
+      },
+    );
+
+    const response = await supabaseUserHandler(request);
     const body = await response.json();
     res.status(response.status).json(body);
   } catch (error) {
