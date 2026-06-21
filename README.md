@@ -89,6 +89,7 @@ npm start
 
 ### Auth
 
+- `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 
 ### Leads
@@ -112,7 +113,8 @@ npm start
 
 ## Notes
 
-- The current login flow is a demo implementation that accepts the credentials `admin@crm.com` / `password`.
+- The auth flow now uses real credential checks against the database for local registration/login.
+- The login handler also attempts Supabase password auth when the Supabase auth environment is configured.
 - The webhook processor stores events and prevents duplicate leads using `platform_lead_id`.
 - The server currently reads its config from [src/config/env.ts](src/config/env.ts).
 
